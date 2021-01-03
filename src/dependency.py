@@ -7,7 +7,6 @@ import re
 def clear_hyphen(s):
     return s.replace("--", "$hyphen$").replace("-", "").replace("$hyphen$", "--")
 
-dep_tree_nlp = spacy.load("en_core_web_sm")
 # dep_entities = { "nsubj", "dobj", "pobj", "nsubjpass" }
 stopwords = {
     'i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 'you',
@@ -28,21 +27,35 @@ stopwords = {
     "shouldn't", 'wasn', "wasn't", 'weren', "weren't", 'won', "won't", 'wouldn', "wouldn't"
 }
 
+dep_tree_nlp = spacy.load("en_core_web_sm")
+
 class DepTree:
     def __init__(self, sentence: str):
-        sentence = clear_hyphen(sentence)
-        self.doc = dep_tree_nlp(sentence)
+        """Initialize a dependency tree.
+
+        Args:
+            sentence (str): input sentence.
+        """
+        sentence = preprocessing(sentence)
+        self.doc = dep_tree_nlp(sentence) # 使用 spacy 提取依存树
         edges = []
         for token in self.doc:
             edges.append((token.head.i, token.i))
-        self.graph = nx.Graph(edges)
-    
-    # def entities(self) -> List[str]:
-    #     return [ token.text for token in self.doc if token.dep_ in dep_entities and token.text not in stopwords]
+        self.graph = nx.Graph(edges)  # 使用 networkx 构建一张无向图
     
     def shortest_path(self, src: str, dest: str) -> List[str]:
+        """Get the shorest path in the dependency graph.
+
+        Args:
+            src (str): source vertex(entity)
+            dest (str): destination vertex(entity)
+
+        Returns:
+            List[str]: shortest path
+        """
         src_pos = self.search(src)
         dest_pos = self.search(dest)
+        # 调用 networkx 的最短路径算法
         try:
             pos_path = nx.shortest_path(self.graph, source=src_pos, target=dest_pos)
             return [ self.doc[i].text for i in pos_path if self.doc[i].text not in stopwords]
