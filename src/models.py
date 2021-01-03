@@ -26,7 +26,8 @@ class ClassifyModel:
             self.model = ClassificationModel("distilbert", "distilbert-base-uncased", num_labels=len(relation_list), use_cuda=False)
     
     def train(self, train_data: Iterator[Tuple[str, str]]):
-        train_df = pd.DataFrame(train_data)
+        data = [ (sent, relation_list.index(rela)) for sent, rela in train_data]
+        train_df = pd.DataFrame(data)
         train.columns = ["text", "labels"]
 
         self.model.train_model(train_df, output_dir=self.path)
