@@ -163,7 +163,7 @@ tree.shortest_path("lawsonite", "crucible")
 ['lawsonite', 'contained', 'in', 'crucible']
 ```
 
-依存路径中间的几个点的内容（`["contained", "in" ]` ），已经两个实体本身的性质（`["lawsonite", "crucible"]`），可以比较好的表现出两个实体之间的关系（`Content-Container`）。
+依存路径中间的几个点的内容（`["contained", "in" ]` ），以及两个实体本身的性质（`["lawsonite", "crucible"]`），可以比较好的表现出两个实体之间的关系（`Content-Container`）。
 
 该方法可以有效的利用两个实体之间的关系给出分类结果，**但是由于实体识别的精准度不够，所以该方法的效果受到了一定的限制**。但在实体识别和分类模型选择适当的时候仍然可以达到 `validation 59%` 的结果。
 
@@ -207,7 +207,7 @@ class DepTree:
 
 ##### 停用词的处理
 
-实现过程中，使用进行了去停用词处理，但由于 `nltk` 提供的停用词表包含了一些对关系判断至关重要的介词，故要重新选择一个停用词表，选择的停用词表如下：
+实现过程中，使用了去停用词处理。由于 `nltk` 提供的停用词表包含了一些对关系判断至关重要的介词，重新选择一个停用词表如下：
 
 ```python
 stopwords = {
