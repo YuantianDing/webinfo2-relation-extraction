@@ -141,6 +141,12 @@ $$
 实体抽取 \to 构建依存树并搜索最短依存路径 \to 放入分类模型分类
 $$
 
+具体涵义如下：
+
+* 实体抽取：抽取对于句子最为关键的两个实体，进行下一步操作
+* 搜索最短依存路径：将整个矩阵作为一棵树，搜索其最短依存路径。
+* 文本分类：依照最短路径进行分类，分为不同的关系类型。
+
 #### 4.2.1 依存树和最短依存路径
 
 依存树用于描述各个词语之间的依存关系。能够指出了词语之间在句法上的搭配关系。通过依存树，我们可以对句子之间的联系有一个比较好的把握。
@@ -231,7 +237,99 @@ stopwords = {
 
 #### 4.2.3 训练实体识别和依存路径分类两个模型
 
-最后要实现实体识别和依存路径的分类。
+最后要实现实体识别和依存路径的分类，其代码如下：
+
+```python
+custom_labels = ["O", "E"] # E 表示实体，O表示非实体。
+
+class DependencyModel:
+    
+
+    def __init__(self, ner_path: str, deps_path: str):
+        """Create/Load a new DependencyModel
+
+        Args:
+            ner_path (str): directory of NER model. (if not exists, create a new model)
+            deps_path (str): directory of classification model.
+        """
+        self.ner_path = ner_path
+        # 新的实体识别模型
+        try:
+            self.ner_model = NERModel("distilbert", ner_path, use_cuda=False)
+        except:
+            self.ner_model = NERModel("distilbert", "distilbert-base-uncased",
+                labels=custom_labels, use_cuda=False)
+        # 新的依存路径文本分类模型
+        self.deps_model = ClassifyModel(deps_path)
+    
+    def train_ner(self, ner_data: Iterator[Tuple[str, str, str]] ):
+        """Train the NER model
+
+        Args:
+            ner_data (Iterator[Tuple[str, str, str]]): iterator of tuple of (sentence, entity1, entity2).
+        """
+
+        train_data = []
+
+        # 先构建一个分词器。
+        tokenizer = nltk.RegexpTokenizer(r"[A-Za-z']+")
+
+        # 转化成 simple transformer 的形式
+        for i, (sentence, e1, e2) in enumerate(ner_data):
+            for word in tokenizer.tokenize(sentence):
+                label = "O"
+                if word.lower() == e1.lower() or word.lower() == e2.lower():
+                    label = "E"
+                train_data.append((i, word, label))
+        
+        train_data = pd.DataFrame(train_data)
+        train_data.columns = ["sentence_id", "words", "labels"]
+        self.ner_model.train(train_data, output_dir=self.ner_path)
+
+    def train_deps(self, train_data: Iterator[Tuple[str, Tuple[str, str, str]]]):
+        """Train the dependency tree path classification model.
+
+        Args:
+            train_data (Iterator[Tuple[str, Tuple[str, str, str]]]): iterator of (sentence, (relation, entity1, entity2))
+        """
+        ......
+    
+    def train(self, train_data: Iterator[Tuple[str, Tuple[str, str, str]]]):
+        """Train both the NER model AND the classification model.
+
+        Args:
+            train_data (Iterator[Tuple[str, Tuple[str, str, str]]]): iterator of (sentence, (relation, entity1, entity2))
+        """
+        ......
+    
+    def predict(self, data: Iterable[str]) -> List[Tuple[str, Tuple[str, str]]]:
+        """Predict the relation extracted from input sentences.
+
+        Args:
+            data (Iterable[str]): list of input sentences.
+
+        Returns:
+            List[Tuple[str, Tuple[str, str]]]: list of (relation, (entity1, entity2))
+        """
+        data = list(data)
+        _, raws = self.ner_model.predict(data) # 只使用原始数据
+
+        predict_data = []
+        entities = []
+        for raw, sentence in zip(raws, data):
+            [e1, e2] = get_entity(raw) # 通过 raw 数据获取最合适的两个实体。
+            tree = DepTree(sentence) # 构建依存树
+            entities.append((e1, e2))
+            predict_data.append(" ".join(tree.shortest_path(e1,e2)))
+        return list(zip(self.deps_model.predict(predict_data), entities))
+```
 
 ## 5 实验结果
+
+
+### 5.1 直接文本分类方法
+
+
+
+![](figure/validation1.png)
 

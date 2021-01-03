@@ -84,7 +84,6 @@ class DependencyModel:
             deps_path (str): directory of classification model.
         """
         self.ner_path = ner_path
-        self.deps_path = deps_path
         try:
             self.ner_model = NERModel("distilbert", ner_path, use_cuda=False)
         except:
