@@ -60,7 +60,7 @@ exp2                        # 根目录
 Prior to the 4004, engineers built computers either from collections of chips or from discrete components.
 ```
 
-助教在实验二在线评测说明中给出的关系抽取结果为：`Instrument-Agency&chips,engineers` ，但想要从这一句话的诸多实体对中选择出 `chips`和`engineers` 这一对实体是一件非常难以理解的事情，而一旦选择 `engineers` 和 `computers` 这一对实体，关系抽取的结果就应当为 `Product-Producer` 。从这个例子可以看出来，该问题具有很强的非线性性。**很难使用传统的机器学习方法（决策树、SVM、CRF）等方法求解，必须使用深度神经网络才能得到比较好的结果。**
+助教在 *实验二在线评测说明* 中给出的关系抽取结果为：`Instrument-Agency&chips,engineers` ，但想要从这一句话的诸多实体对中选择出 `chips`和`engineers` 这一对实体是一件非常难以理解的事情，而一旦选择 `engineers` 和 `computers` 这一对实体，关系抽取的结果就应当为 `Product-Producer` 。从这个例子可以看出来，该问题具有很强的非线性性。**很难使用传统的机器学习方法（决策树、SVM、CRF）等方法求解，必须使用深度神经网络才能得到比较好的结果。**
 
 但是另一方面，本次实验的数据集相对而言比较小，使用特别复杂的神经网络，非常容易产生过拟合，故为了防止过拟合，我们使用一下两个策略：
 
@@ -329,7 +329,43 @@ class DependencyModel:
 
 ### 5.1 直接文本分类方法
 
-
+关系抽取准确率结果如图：
 
 ![](figure/validation1.png)
+
+输出在 `outputs/output1.txt`
+
+### 5.2 实体抽取 + 依存树方法
+
+关系抽取和实体识别准确率结果如图：
+
+![](figure/validation2.png)
+
+输出在 `outputs/output2.txt`
+
+### 5.3 结果的比较和分析
+
+我们使用助教在 *实验二在线评测说明* 给出来的两个例子对结果进行分析：
+
+1. `The body of her nephew was in a suitcase under the bed.`
+    
+    正确结果：`Content-Container&body,suitcase`
+    
+    直接分类方法：`Content-Container`
+    
+    依存路径分类方法：`Content-Container&body,suitcase`
+    
+    两个方法的结果都正确。
+    
+2. `Prior to the 4004, engineers built computers either from collections of chips or from discrete components.`
+
+    正确结果：`Instrument-Agency&chips,engineers`
+
+    直接分类方法：`Product-Producer`
+
+    依存路径分类方法：`Product-Producer&engineers,computers`
+
+    这个句子的给出的实体对很奇怪，是 `engineers` 和 `chips` ，而似乎两种方法都认为`engineers,computers` 是更为合适的实体对，这对于人和机器都是无法避免的。
+
+
 

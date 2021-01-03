@@ -36,7 +36,7 @@ class DepTree:
         Args:
             sentence (str): input sentence.
         """
-        sentence = preprocessing(sentence)
+        sentence = clear_hyphen(sentence)
         self.doc = dep_tree_nlp(sentence) # 使用 spacy 提取依存树
         edges = []
         for token in self.doc:
