@@ -22,11 +22,33 @@ pip install simpletransformers pandas spacy networkx
 
 ### 3.1 dataset.py
 
+`read_train` 针对处理 train.txt 的数据为 `(sentence, (relation, src, dest))` 的格式。
 
+`read_test` 针对处理 test.txt 的数据为 `sentence` 的格式。
 
 ### 3.2 dependency.py
 
+- `class DepTree`
 
+  - `shortest_path` 调用 `networkx` 得到两个实体结点在依存树中的最短路径；
+
+  - `search` 找到实体所在位置。
 
 ### 3.3 models.py
 
+- `class ClassifyModel` 利用 `simpletransformers.classification` 的 `ClassificationModel`
+
+  - `train` 训练模型；
+
+  - `predict` 预测。
+
+- `class DependencyModel`
+
+  - `train_ner` 训练实体模型；
+
+  - `train_deps` 训练依存树模型（利用到训练出来的实体信息）；
+
+  - `train` 依次调用两个训练函数；
+  - `predict` 调用 `dependency.py` 中的预测函数并返回处理结果。
+
+- `get_entity` 获取最有可能的两个实体并返回。
